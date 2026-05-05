@@ -4,6 +4,13 @@ import { AppLayout } from './layouts/AppLayout';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Login } from './views/Login';
 import { Dashboard } from './views/Dashboard';
+import { Transactions } from './views/Transactions';
+import { Accounts } from './views/Accounts';
+import { Budgets } from './views/Budgets';
+import { Goals } from './views/Goals';
+import { Assets } from './views/Assets';
+import { Insurance } from './views/Insurance';
+import { Reports } from './views/Reports';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,14 +32,13 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              {/* Remaining views – to be implemented in Phase 2 */}
-              <Route path="/transactions" element={<ComingSoon title="Lançamentos" />} />
-              <Route path="/accounts" element={<ComingSoon title="Contas" />} />
-              <Route path="/budgets" element={<ComingSoon title="Orçamentos" />} />
-              <Route path="/goals" element={<ComingSoon title="Metas" />} />
-              <Route path="/assets" element={<ComingSoon title="Patrimônio" />} />
-              <Route path="/insurance" element={<ComingSoon title="Seguros" />} />
-              <Route path="/reports" element={<ComingSoon title="Relatórios" />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/accounts" element={<Accounts />} />
+              <Route path="/budgets" element={<Budgets />} />
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/assets" element={<Assets />} />
+              <Route path="/insurance" element={<Insurance />} />
+              <Route path="/reports" element={<Reports />} />
             </Route>
           </Route>
 
@@ -40,14 +46,5 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
-  );
-}
-
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="flex h-64 flex-col items-center justify-center gap-2">
-      <h2 className="text-xl font-semibold text-neutral-200">{title}</h2>
-      <p className="text-sm text-neutral-500">Em desenvolvimento — Fase 2</p>
-    </div>
   );
 }
