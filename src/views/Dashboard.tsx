@@ -2,19 +2,18 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabaseClient';
 import { useProfile } from '../hooks/useProfile';
+import { useFinancialStats } from '../hooks/useFinancialStats';
+import { useAppStore } from '../store/useAppStore';
 import {
-  buildDashboardSummary,
-  computeEmergencyFundStatus,
   computeGoalProgress,
   projectFinancialIndependence,
   formatCurrency,
   formatPercentage,
-  computeMonthlyPL,
 } from '../services/financialCalculations';
-import type { Account, Transaction, Asset, FinancialGoal } from '../types';
+import type { FinancialGoal } from '../types';
 import { GoalStatus } from '../types';
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatCard({
   label, value, sub, valueClass = 'text-neutral-100',
@@ -46,36 +45,32 @@ function SectionTitle({ children, to }: { children: React.ReactNode; to?: string
   );
 }
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function Dashboard() {
   const now = new Date();
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
-  const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-  const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+  const { activeMonth, activeYear } = useAppStore();
+  const month = activeMonth;
+  const year = activeYear;
 
   const { data: profile } = useProfile();
+  const { data: stats, isLoading: statsLoading } = useFinancialStats(month, year);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['dashboard', month, year],
+  // Goals list (top 3 active)
+  const { data: goals = [] } = useQuery({
+    queryKey: ['goals-dashboard'],
     queryFn: async () => {
-      const [accountsRes, txRes, assetsRes, goalsRes] = await Promise.all([
-        supabase.from('accounts').select('*').eq('is_active', true),
-        supabase.from('transactions').select('*').gte('date', startDate).lte('date', endDate).eq('is_confirmed', true),
-        supabase.from('assets').select('*'),
-        supabase.from('financial_goals').select('*').eq('status', GoalStatus.ACTIVE).limit(3),
-      ]);
-      return {
-        accounts: (accountsRes.data ?? []) as Account[],
-        transactions: (txRes.data ?? []) as Transaction[],
-        assets: (assetsRes.data ?? []) as Asset[],
-        goals: (goalsRes.data ?? []) as FinancialGoal[],
-      };
+      const { data } = await supabase
+        .from('financial_goals')
+        .select('*')
+        .eq('status', GoalStatus.ACTIVE)
+        .order('target_date')
+        .limit(3);
+      return (data ?? []) as FinancialGoal[];
     },
   });
 
-  if (isLoading || !data) {
+  if (statsLoading || !stats) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-brand-500" />
@@ -83,28 +78,20 @@ export function Dashboard() {
     );
   }
 
-  const summary = buildDashboardSummary(data.accounts, data.transactions, data.assets);
-  const pfPL = computeMonthlyPL(data.transactions, 'PF' as const);
-  const pjPL = computeMonthlyPL(data.transactions, 'PJ' as const);
-
-  const emergencyMonths = profile?.emergency_fund_months ?? 6;
-  const emergencyStatus = computeEmergencyFundStatus(
-    data.assets,
-    summary.monthly_expenses || (profile?.monthly_income_target ? profile.monthly_income_target * 0.7 : 5000),
-    emergencyMonths,
-  );
-
   const fiTarget = profile?.financial_independence_target ?? null;
   const fiProjection = fiTarget
     ? projectFinancialIndependence({
-        currentNetWorth: summary.net_worth,
-        monthlyContribution: summary.monthly_savings > 0 ? summary.monthly_savings : 0,
+        currentNetWorth: stats.netWorth,
+        monthlyContribution: stats.monthlySavings > 0 ? stats.monthlySavings : 0,
         desiredMonthlyPassiveIncome: fiTarget / 300,
         annualReturnRate: 8,
       })
     : null;
 
-  const monthName = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const monthName = new Date(year, month - 1).toLocaleDateString('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+  });
 
   return (
     <div className="space-y-8">
@@ -126,18 +113,18 @@ export function Dashboard() {
 
       {/* Top KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Saldo Total" value={formatCurrency(summary.total_balance)} />
-        <StatCard label="Patrimônio" value={formatCurrency(summary.net_worth)} />
+        <StatCard label="Saldo Total" value={formatCurrency(stats.totalBalance)} />
+        <StatCard label="Patrimônio" value={formatCurrency(stats.netWorth)} />
         <StatCard
           label="Resultado do Mês"
-          value={formatCurrency(summary.monthly_savings)}
-          valueClass={summary.monthly_savings >= 0 ? 'text-green-400' : 'text-red-400'}
-          sub={`Taxa: ${formatPercentage(summary.savings_rate)}`}
+          value={formatCurrency(stats.monthlySavings)}
+          valueClass={stats.monthlySavings >= 0 ? 'text-green-400' : 'text-red-400'}
+          sub={`Taxa de poupança: ${formatPercentage(stats.savingsRate)}`}
         />
         <StatCard
           label="Ativos Líquidos"
-          value={formatCurrency(summary.liquid_assets)}
-          sub={`${emergencyStatus.coverageMonths.toFixed(1)} meses de reserva`}
+          value={formatCurrency(stats.liquidAssets)}
+          sub={`${stats.runway.coverageMonths.toFixed(1)} meses de reserva`}
         />
       </div>
 
@@ -146,9 +133,9 @@ export function Dashboard() {
         <SectionTitle to="/transactions">Receitas e Despesas — Mês Atual</SectionTitle>
         <div className="grid grid-cols-2 gap-4">
           {[
-            { label: 'Pessoa Física', pl: pfPL, balance: summary.pf_balance },
-            { label: 'Pessoa Jurídica', pl: pjPL, balance: summary.pj_balance },
-          ].map(({ label, pl, balance }) => (
+            { label: 'Pessoa Física', income: stats.pfIncome, expenses: stats.pfExpenses, balance: stats.pfBalance },
+            { label: 'Pessoa Jurídica', income: stats.pjIncome, expenses: stats.pjExpenses, balance: stats.pjBalance },
+          ].map(({ label, income, expenses, balance }) => (
             <div key={label} className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-medium text-neutral-300">{label}</span>
@@ -157,17 +144,17 @@ export function Dashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-neutral-500">Receitas</span>
-                  <span className="text-green-400">{formatCurrency(pl.income)}</span>
+                  <span className="text-green-400">{formatCurrency(income)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-neutral-500">Despesas</span>
-                  <span className="text-red-400">{formatCurrency(pl.expenses)}</span>
+                  <span className="text-red-400">{formatCurrency(expenses)}</span>
                 </div>
                 <div className="pt-1">
                   <ProgressBar
-                    value={pl.expenses}
-                    max={pl.income || 1}
-                    colorClass={pl.expenses > pl.income ? 'bg-red-500' : 'bg-brand-500'}
+                    value={expenses}
+                    max={income || 1}
+                    colorClass={expenses > income ? 'bg-red-500' : 'bg-brand-500'}
                   />
                 </div>
               </div>
@@ -176,46 +163,82 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Emergency Fund */}
+      {/* Tax Estimate */}
+      {stats.taxEstimate && (
+        <div>
+          <SectionTitle to="/tools">Estimativa de Impostos do Mês</SectionTitle>
+          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div>
+                <p className="text-xs text-neutral-500">IRPF estimado</p>
+                <p className="mt-1 text-lg font-semibold text-red-400">{formatCurrency(stats.taxEstimate.irpfDue)}</p>
+                <p className="text-xs text-neutral-600">Faixa {stats.taxEstimate.irpfBracket}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500">INSS</p>
+                <p className="mt-1 text-lg font-semibold text-red-400">{formatCurrency(stats.taxEstimate.inssDeduction)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500">Impostos PJ</p>
+                <p className="mt-1 text-lg font-semibold text-red-400">{formatCurrency(stats.taxEstimate.pjTaxesDue)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500">Carga total</p>
+                <p className="mt-1 text-lg font-semibold text-amber-400">{formatCurrency(stats.taxEstimate.totalTaxBurden)}</p>
+                <p className="text-xs text-neutral-600">{formatPercentage(stats.taxEstimate.effectiveIRPFRate)} efetivo PF</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Fund — uses real 3-month average */}
       <div>
-        <SectionTitle to="/assets">Reserva de Emergência</SectionTitle>
+        <SectionTitle to="/tools">Reserva de Emergência</SectionTitle>
         <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-neutral-200">
-                {formatCurrency(emergencyStatus.currentLiquidAmount)}{' '}
-                <span className="text-neutral-500 font-normal">de {formatCurrency(emergencyStatus.targetAmount)}</span>
+                {formatCurrency(stats.runway.liquidAmount)}{' '}
+                <span className="font-normal text-neutral-500">
+                  de {formatCurrency(stats.runway.avgMonthlyExpenses * stats.runway.targetMonths)}
+                </span>
               </p>
               <p className="mt-0.5 text-xs text-neutral-500">
-                {emergencyStatus.coverageMonths.toFixed(1)} de {emergencyMonths} meses cobertos
+                {stats.runway.coverageMonths.toFixed(1)} de {stats.runway.targetMonths} meses
+                {stats.runway.monthsAnalyzed > 0
+                  ? ` · média baseada nos últimos ${stats.runway.monthsAnalyzed} meses reais`
+                  : ''}
               </p>
             </div>
-            <span className={`text-sm font-semibold ${emergencyStatus.isAdequate ? 'text-green-400' : 'text-amber-400'}`}>
-              {emergencyStatus.isAdequate ? '✓ Adequada' : `Faltam ${formatCurrency(emergencyStatus.missingAmount)}`}
+            <span className={`text-sm font-semibold ${stats.runway.isAdequate ? 'text-green-400' : 'text-amber-400'}`}>
+              {stats.runway.isAdequate
+                ? '✓ Adequada'
+                : `Faltam ${formatCurrency(
+                    stats.runway.avgMonthlyExpenses * stats.runway.targetMonths - stats.runway.liquidAmount,
+                  )}`}
             </span>
           </div>
           <ProgressBar
-            value={emergencyStatus.currentLiquidAmount}
-            max={emergencyStatus.targetAmount}
-            colorClass={emergencyStatus.isAdequate ? 'bg-green-500' : 'bg-amber-500'}
+            value={stats.runway.liquidAmount}
+            max={Math.max(stats.runway.avgMonthlyExpenses * stats.runway.targetMonths, 1)}
+            colorClass={stats.runway.isAdequate ? 'bg-green-500' : 'bg-amber-500'}
           />
         </div>
       </div>
 
       {/* Goals */}
-      {data.goals.length > 0 && (
+      {goals.length > 0 && (
         <div>
           <SectionTitle to="/goals">Metas em Progresso</SectionTitle>
           <div className="space-y-3">
-            {data.goals.map((goal) => {
+            {goals.map((goal) => {
               const prog = computeGoalProgress(goal);
               return (
                 <div key={goal.id} className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-neutral-200">{goal.name}</span>
-                    <span className="text-sm font-semibold text-neutral-100">
-                      {formatPercentage(prog.percentage)}
-                    </span>
+                    <span className="text-sm font-semibold text-neutral-100">{formatPercentage(prog.percentage)}</span>
                   </div>
                   <ProgressBar value={goal.current_amount} max={goal.target_amount} />
                   <div className="mt-2 flex justify-between text-xs text-neutral-500">
@@ -244,11 +267,11 @@ export function Dashboard() {
                 <p className="mt-1 text-lg font-semibold text-brand-400">{formatCurrency(fiProjection.target_amount)}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500">Projeção</p>
+                <p className="text-xs text-neutral-500">Prazo estimado</p>
                 <p className="mt-1 text-lg font-semibold text-neutral-100">
-                  {fiProjection.months_to_independence > 0
-                    ? `${Math.floor(fiProjection.months_to_independence / 12)}a ${fiProjection.months_to_independence % 12}m`
-                    : '🎉 Atingido!'}
+                  {fiProjection.months_to_independence === 0
+                    ? '🎉 Atingido!'
+                    : `${Math.floor(fiProjection.months_to_independence / 12)}a ${fiProjection.months_to_independence % 12}m`}
                 </p>
               </div>
             </div>
@@ -273,7 +296,7 @@ export function Dashboard() {
           {[
             { to: '/transactions', label: 'Novo lançamento', icon: '↕' },
             { to: '/goals', label: 'Minhas metas', icon: '◈' },
-            { to: '/assets', label: 'Patrimônio', icon: '◆' },
+            { to: '/tools', label: 'Ferramentas', icon: '⊕' },
             { to: '/reports', label: 'Relatórios', icon: '▤' },
           ].map((item) => (
             <Link

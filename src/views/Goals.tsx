@@ -37,7 +37,7 @@ const defaultForm = (): CreateGoalInput => ({
 
 export function Goals() {
   const [open, setOpen] = useState(false);
-  const [contributionGoalId, setContributionGoalId] = useState<string | null>(null);
+  const [contributionGoalId, setContributionGoalId] = useState<{ id: string; name: string } | null>(null);
   const [contributionAmount, setContributionAmount] = useState(0);
   const [form, setForm] = useState<CreateGoalInput>(defaultForm());
   const [formError, setFormError] = useState('');
@@ -68,7 +68,11 @@ export function Goals() {
   async function handleContribution(e: React.FormEvent) {
     e.preventDefault();
     if (!contributionGoalId || contributionAmount <= 0) return;
-    await addContribution.mutateAsync({ id: contributionGoalId, amount: contributionAmount });
+    await addContribution.mutateAsync({
+      id: contributionGoalId.id,
+      amount: contributionAmount,
+      goalName: contributionGoalId.name,
+    });
     setContributionGoalId(null);
     setContributionAmount(0);
   }
@@ -155,7 +159,7 @@ export function Goals() {
                     size="sm"
                     variant="secondary"
                     className="flex-1"
-                    onClick={() => setContributionGoalId(goal.id)}
+                    onClick={() => setContributionGoalId({ id: goal.id, name: goal.name })}
                     disabled={goal.status !== GoalStatus.ACTIVE}
                   >
                     Aportar
@@ -238,7 +242,7 @@ export function Goals() {
       </Modal>
 
       {/* Contribution Modal */}
-      <Modal open={contributionGoalId !== null} onClose={() => setContributionGoalId(null)} title="Registrar Aporte" maxWidth="sm">
+      <Modal open={contributionGoalId !== null} onClose={() => setContributionGoalId(null)} title={`Aportar em "${contributionGoalId?.name ?? ''}"`} maxWidth="sm">
         <form onSubmit={(e) => void handleContribution(e)} className="space-y-4">
           <FormField label="Valor do aporte (R$)" required>
             <Input
