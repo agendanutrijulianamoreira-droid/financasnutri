@@ -14,6 +14,7 @@ import { Goals } from './views/Goals';
 import { Assets } from './views/Assets';
 import { Insurance } from './views/Insurance';
 import { Reports } from './views/Reports';
+import { Settings } from './views/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ export default function App() {
               <Route path="/assets" element={<Assets />} />
               <Route path="/insurance" element={<Insurance />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>
 

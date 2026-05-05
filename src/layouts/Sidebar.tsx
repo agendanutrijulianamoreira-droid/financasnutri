@@ -17,6 +17,8 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/assets', label: 'Patrimônio', icon: '◆' },
   { to: '/insurance', label: 'Seguros', icon: '◉' },
   { to: '/reports', label: 'Relatórios', icon: '▤' },
+  { to: '/tools', label: 'Ferramentas', icon: '⊕' },
+  { to: '/settings', label: 'Configurações', icon: '◧' },
 ];
 
 export function Sidebar() {
