@@ -1,42 +1,187 @@
 @import "tailwindcss";
 
+/* ── Design Tokens ─────────────────────────────────────────── */
 @theme {
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
+  /* Gold — brand accent */
+  --color-brand-50:  #fefce8;
+  --color-brand-100: #fef9c3;
+  --color-brand-200: #fef08a;
+  --color-brand-300: #e8c96a;
+  --color-brand-400: #d9b848;
+  --color-brand-500: #c9a435;
+  --color-brand-600: #b89025;
+  --color-brand-700: #a07b15;
+  --color-brand-800: #7d6010;
+  --color-brand-900: #5c4508;
+  --color-brand-950: #3d2d04;
 
-  --color-success-500: #22c55e;
-  --color-danger-500: #ef4444;
-  --color-warning-500: #f59e0b;
+  /* Brown — primary dark */
+  --color-brown-50:  #faf6f2;
+  --color-brown-100: #f0e9e0;
+  --color-brown-200: #e2d3c3;
+  --color-brown-300: #ceb99f;
+  --color-brown-400: #b89878;
+  --color-brown-500: #9b7b5c;
+  --color-brown-600: #7d6250;
+  --color-brown-700: #5e4a3c;
+  --color-brown-800: #3d2e22;
+  --color-brown-900: #2b1a10;
+  --color-brown-950: #1a0f08;
 
+  /* Cream — page surfaces */
+  --color-cream-50:  #fdfbf8;
+  --color-cream-100: #f9f6f0;
+  --color-cream-200: #f4efe4;
+  --color-cream-300: #ede4d5;
+  --color-cream-400: #e0d3c0;
+  --color-cream-500: #cfc0a8;
+
+  /* Semantic */
+  --color-success-100: #e8f0e5;
+  --color-success-400: #5a8050;
+  --color-success-500: #4a6741;
+  --color-success-600: #3a5332;
+  --color-danger-100:  #fde8e5;
+  --color-danger-400:  #d44c3e;
+  --color-danger-500:  #c0392b;
+  --color-warning-100: #fef3e0;
+  --color-warning-400: #c9a035;
+  --color-warning-500: #b7882c;
+
+  /* Typography */
+  --font-display: Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   margin: 0;
-  background-color: #0a0a0f;
-  color: #e5e7eb;
+  background-color: #f4efe4;
+  color: #2b1a10;
   font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-#root {
-  min-height: 100svh;
+#root { min-height: 100svh; }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar             { width: 5px; height: 5px; }
+::-webkit-scrollbar-track       { background: transparent; }
+::-webkit-scrollbar-thumb       { background: #ceb99f; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #b89878; }
+
+/* ── Headings use display font ─────────────────────────────── */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+/* ── Card ──────────────────────────────────────────────────── */
+.card {
+  background: #ffffff;
+  border: 1px solid #ede4d5;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(43, 26, 16, 0.05), 0 4px 12px rgba(43, 26, 16, 0.04);
+}
+
+.card-featured {
+  border-top: 2px solid #c9a435;
+}
+
+/* ── Gradient text ─────────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #c9a435 0%, #2b1a10 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Gold glow ─────────────────────────────────────────────── */
+.glow-gold {
+  box-shadow: 0 0 16px rgba(201, 164, 53, 0.25), 0 0 32px rgba(201, 164, 53, 0.10);
+}
+
+/* ── Fade in ───────────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.25s ease forwards; }
+
+/* ── Shimmer skeleton (light) ──────────────────────────────── */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: #ede4d5;
+  border-radius: 8px;
+}
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+/* ── Number pop ────────────────────────────────────────────── */
+@keyframes number-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.animate-number-pop { animation: number-pop 0.22s ease; }
+
+/* ── Progress bar track ────────────────────────────────────── */
+.progress-track {
+  background: #ede4d5;
+  border-radius: 99px;
+  overflow: hidden;
+  height: 7px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* ── Sidebar nav link ──────────────────────────────────────── */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #9b7b5c;
+  transition: background 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+}
+.nav-link:hover {
+  background: rgba(201, 164, 53, 0.08);
+  color: #e8c96a;
+}
+.nav-link.active {
+  background: rgba(201, 164, 53, 0.15);
+  color: #c9a435;
+}
+.nav-link .nav-icon {
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+  font-size: 15px;
+}

@@ -37,68 +37,202 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-4">
+    <div
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{ background: '#f4efe4' }}
+    >
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-100">Rainha das Finanças</h1>
-          <p className="mt-1 text-sm text-neutral-500">Entre na sua conta</p>
+        {/* Brand */}
+        <div className="mb-10 text-center">
+          <div
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
+            style={{ background: '#2b1a10' }}
+          >
+            <span style={{ color: '#c9a435', fontSize: 24 }}>♛</span>
+          </div>
+          <h1
+            style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 22,
+              fontWeight: 700,
+              color: '#2b1a10',
+              margin: 0,
+            }}
+          >
+            Rainha das Finanças
+          </h1>
+          <p className="mt-1.5 text-sm" style={{ color: '#9b7b5c' }}>
+            Entre na sua conta
+          </p>
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-xs font-medium text-neutral-400 mb-1">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="block w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              placeholder="voce@exemplo.com"
-            />
-          </div>
-
-          <div>
-            <div className="mb-1 flex items-center justify-between">
-              <label htmlFor="password" className="block text-xs font-medium text-neutral-400">
-                Senha
+        {/* Card */}
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: '#ffffff',
+            border: '1px solid #ede4d5',
+            boxShadow: '0 4px 24px rgba(43,26,16,0.08)',
+          }}
+        >
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                style={{
+                  display: 'block',
+                  marginBottom: 6,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.07em',
+                  textTransform: 'uppercase',
+                  color: '#7d6250',
+                }}
+              >
+                E-mail
               </label>
-              <Link to="/forgot-password" className="text-xs text-brand-400 hover:underline">
-                Esqueci a senha
-              </Link>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@exemplo.com"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  borderRadius: 8,
+                  border: '1px solid #e0d3c0',
+                  background: '#f9f6f0',
+                  padding: '10px 14px',
+                  fontSize: 14,
+                  color: '#2b1a10',
+                  outline: 'none',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#c9a435';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201,164,53,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e0d3c0';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
             </div>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="block w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              placeholder="••••••••"
-            />
-          </div>
 
-          {error && (
-            <p className="rounded-lg border border-red-800 bg-red-950 px-4 py-2 text-sm text-red-400">
-              {error}
-            </p>
-          )}
+            {/* Password */}
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.07em',
+                    textTransform: 'uppercase',
+                    color: '#7d6250',
+                  }}
+                >
+                  Senha
+                </label>
+                <Link
+                  to="/forgot-password"
+                  style={{ fontSize: 12, color: '#c9a435', textDecoration: 'none' }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline')}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none')}
+                >
+                  Esqueci a senha
+                </Link>
+              </div>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  borderRadius: 8,
+                  border: '1px solid #e0d3c0',
+                  background: '#f9f6f0',
+                  padding: '10px 14px',
+                  fontSize: 14,
+                  color: '#2b1a10',
+                  outline: 'none',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#c9a435';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201,164,53,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e0d3c0';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
+            {/* Error */}
+            {error && (
+              <div
+                className="rounded-lg px-4 py-3 text-sm"
+                style={{
+                  background: '#fde8e5',
+                  border: '1px solid #c0392b',
+                  color: '#c0392b',
+                }}
+              >
+                {error}
+              </div>
+            )}
 
-        <p className="mt-6 text-center text-sm text-neutral-600">
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                display: 'block',
+                width: '100%',
+                borderRadius: 8,
+                background: loading ? '#5e4a3c' : '#2b1a10',
+                color: '#ffffff',
+                padding: '11px 16px',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'background 0.15s',
+                fontFamily: 'Inter, system-ui, sans-serif',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#3d2e22';
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#2b1a10';
+              }}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+        </div>
+
+        <p className="mt-6 text-center text-sm" style={{ color: '#9b7b5c' }}>
           Não tem conta?{' '}
-          <Link to="/signup" className="text-brand-400 hover:underline">
-            Criar conta grátis
+          <Link
+            to="/signup"
+            style={{ color: '#c9a435', fontWeight: 600, textDecoration: 'none' }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline')}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none')}
+          >
+            Criar conta
           </Link>
         </p>
       </div>

@@ -3,32 +3,36 @@ import type { Toast } from '../../store/useToastStore';
 
 const styles = {
   success: {
-    container: 'border-green-700 bg-green-950',
+    bg: '#ffffff',
+    border: '#4a6741',
+    accent: '#4a6741',
     icon: '✓',
-    iconClass: 'text-green-400',
-    title: 'text-green-300',
-    message: 'text-green-500',
+    titleColor: '#2b1a10',
+    msgColor: '#5e4a3c',
   },
   warning: {
-    container: 'border-amber-700 bg-amber-950',
+    bg: '#ffffff',
+    border: '#b7882c',
+    accent: '#b7882c',
     icon: '⚠',
-    iconClass: 'text-amber-400',
-    title: 'text-amber-300',
-    message: 'text-amber-500',
+    titleColor: '#2b1a10',
+    msgColor: '#5e4a3c',
   },
   error: {
-    container: 'border-red-700 bg-red-950',
+    bg: '#ffffff',
+    border: '#c0392b',
+    accent: '#c0392b',
     icon: '✕',
-    iconClass: 'text-red-400',
-    title: 'text-red-300',
-    message: 'text-red-500',
+    titleColor: '#2b1a10',
+    msgColor: '#5e4a3c',
   },
   info: {
-    container: 'border-brand-700 bg-brand-950',
+    bg: '#ffffff',
+    border: '#c9a435',
+    accent: '#c9a435',
     icon: 'ℹ',
-    iconClass: 'text-brand-400',
-    title: 'text-brand-300',
-    message: 'text-brand-500',
+    titleColor: '#2b1a10',
+    msgColor: '#5e4a3c',
   },
 };
 
@@ -38,20 +42,58 @@ function ToastItem({ toast }: { toast: Toast }) {
 
   return (
     <div
-      className={`flex w-80 items-start gap-3 rounded-xl border p-4 shadow-2xl ${s.container}`}
       role="alert"
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 12,
+        width: 320,
+        background: s.bg,
+        border: `1px solid ${s.border}`,
+        borderLeft: `4px solid ${s.accent}`,
+        borderRadius: 10,
+        padding: '14px 16px',
+        boxShadow: '0 4px 16px rgba(43,26,16,0.12)',
+      }}
     >
-      <span className={`mt-0.5 flex-shrink-0 text-base font-bold ${s.iconClass}`}>{s.icon}</span>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold ${s.title}`}>{toast.title}</p>
+      <span
+        style={{
+          flexShrink: 0,
+          marginTop: 1,
+          fontWeight: 700,
+          fontSize: 13,
+          color: s.accent,
+        }}
+      >
+        {s.icon}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: s.titleColor }}>
+          {toast.title}
+        </p>
         {toast.message && (
-          <p className={`mt-0.5 text-xs leading-relaxed ${s.message}`}>{toast.message}</p>
+          <p style={{ margin: '3px 0 0', fontSize: 12, color: s.msgColor, lineHeight: 1.5 }}>
+            {toast.message}
+          </p>
         )}
       </div>
       <button
         onClick={() => dismiss(toast.id)}
-        className="flex-shrink-0 text-xs text-neutral-600 hover:text-neutral-400"
         aria-label="Fechar"
+        style={{
+          flexShrink: 0,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: 12,
+          color: '#9b7b5c',
+          padding: '2px 4px',
+          borderRadius: 4,
+          lineHeight: 1,
+          transition: 'color 0.15s',
+        }}
+        onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#2b1a10')}
+        onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#9b7b5c')}
       >
         ✕
       </button>
@@ -65,7 +107,17 @@ export function Toaster() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 20,
+        right: 20,
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} />
       ))}

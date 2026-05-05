@@ -26,19 +26,55 @@ export function Modal({ open, onClose, title, children, maxWidth = 'md' }: Modal
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(43, 26, 16, 0.45)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className={`w-full ${widths[maxWidth]} rounded-xl border border-neutral-700 bg-neutral-900 shadow-2xl`}>
-        <div className="flex items-center justify-between border-b border-neutral-800 px-6 py-4">
-          <h2 className="text-base font-semibold text-neutral-100">{title}</h2>
+      <div
+        className={`w-full ${widths[maxWidth]} rounded-2xl bg-white`}
+        style={{
+          boxShadow: '0 8px 32px rgba(43,26,16,0.18), 0 2px 8px rgba(43,26,16,0.10)',
+          border: '1px solid #ede4d5',
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: '1px solid #f4efe4' }}
+        >
+          <h2
+            style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 16,
+              fontWeight: 700,
+              color: '#2b1a10',
+              margin: 0,
+            }}
+          >
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="rounded p-1 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300"
+            style={{
+              color: '#9b7b5c',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 16,
+              padding: '4px 6px',
+              borderRadius: 6,
+              lineHeight: 1,
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#2b1a10')}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#9b7b5c')}
+            aria-label="Fechar"
           >
             ✕
           </button>
         </div>
+
+        {/* Body */}
         <div className="px-6 py-5">{children}</div>
       </div>
     </div>

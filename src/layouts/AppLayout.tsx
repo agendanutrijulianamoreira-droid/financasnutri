@@ -14,7 +14,6 @@ function AlertWatcher() {
   useEffect(() => {
     if (!stats) return;
 
-    // PJ balance below pro-labore alert (once per session)
     if (stats.pjBalanceBelowProLabore && !alertedRef.current.has('pj-low-balance')) {
       alertedRef.current.add('pj-low-balance');
       toast.warning(
@@ -26,7 +25,6 @@ function AlertWatcher() {
       );
     }
 
-    // Emergency fund incomplete (once per session)
     if (
       !stats.runway.isAdequate &&
       stats.runway.monthsAnalyzed > 0 &&
@@ -35,7 +33,7 @@ function AlertWatcher() {
       alertedRef.current.add('emergency-low');
       toast.warning(
         'Reserva de emergência incompleta',
-        `${stats.runway.coverageMonths.toFixed(1)} de ${stats.runway.targetMonths} meses cobertos com base nos últimos ${stats.runway.monthsAnalyzed} meses.`,
+        `${stats.runway.coverageMonths.toFixed(1)} de ${stats.runway.targetMonths} meses cobertos.`,
       );
     }
   }, [stats]);
@@ -47,16 +45,16 @@ export function AppLayout() {
   const sidebarOpen = useAppStore((s) => s.sidebarOpen);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-neutral-950">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#f4efe4' }}>
       <AlertWatcher />
       <Sidebar />
       <main
         className={[
           'flex-1 overflow-y-auto transition-all duration-300',
-          sidebarOpen ? 'ml-64' : 'ml-16',
+          sidebarOpen ? 'ml-60' : 'ml-[60px]',
         ].join(' ')}
       >
-        <div className="min-h-full p-6">
+        <div className="min-h-full p-7">
           <Outlet />
         </div>
       </main>

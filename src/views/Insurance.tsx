@@ -11,24 +11,13 @@ import { InsuranceType } from '../types';
 import type { CreateInsuranceInput } from '../lib/validations';
 
 const INSURANCE_TYPE_LABELS: Record<InsuranceType, string> = {
-  LIFE: 'Vida',
-  HEALTH: 'Saúde',
-  AUTO: 'Auto',
-  HOME: 'Residencial',
-  PROFESSIONAL_LIABILITY: 'Resp. Civil',
-  OTHER: 'Outro',
+  LIFE: 'Vida', HEALTH: 'Saúde', AUTO: 'Auto',
+  HOME: 'Residencial', PROFESSIONAL_LIABILITY: 'Resp. Civil', OTHER: 'Outro',
 };
 
 const defaultForm = (): CreateInsuranceInput => ({
-  name: '',
-  type: InsuranceType.HEALTH,
-  insurer: '',
-  policy_number: null,
-  monthly_premium: 0,
-  coverage_amount: 0,
-  start_date: '',
-  end_date: null,
-  notes: null,
+  name: '', type: InsuranceType.HEALTH, insurer: '', policy_number: null,
+  monthly_premium: 0, coverage_amount: 0, start_date: '', end_date: null, notes: null,
 });
 
 export function Insurance() {
@@ -40,8 +29,9 @@ export function Insurance() {
   const createInsurance = useCreateInsurance();
   const deleteInsurance = useDeleteInsurance();
 
-  const totalMonthly = insurances.filter((i) => i.is_active).reduce((s, i) => s + i.monthly_premium, 0);
-  const totalCoverage = insurances.filter((i) => i.is_active).reduce((s, i) => s + i.coverage_amount, 0);
+  const active = insurances.filter((i) => i.is_active);
+  const totalMonthly  = active.reduce((s, i) => s + i.monthly_premium, 0);
+  const totalCoverage = active.reduce((s, i) => s + i.coverage_amount, 0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,24 +54,23 @@ export function Insurance() {
         action={<Button onClick={() => setOpen(true)}>+ Novo seguro</Button>}
       />
 
+      {/* Summary */}
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-          <p className="text-xs text-neutral-500">Seguros ativos</p>
-          <p className="mt-1 text-xl font-semibold text-neutral-100">{insurances.filter((i) => i.is_active).length}</p>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-          <p className="text-xs text-neutral-500">Custo mensal</p>
-          <p className="mt-1 text-xl font-semibold text-red-400">{formatCurrency(totalMonthly)}</p>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-          <p className="text-xs text-neutral-500">Cobertura total</p>
-          <p className="mt-1 text-xl font-semibold text-green-400">{formatCurrency(totalCoverage)}</p>
-        </div>
+        {[
+          { label: 'Seguros ativos', value: String(active.length), color: '#2b1a10' },
+          { label: 'Custo mensal', value: formatCurrency(totalMonthly), color: '#c0392b' },
+          { label: 'Cobertura total', value: formatCurrency(totalCoverage), color: '#4a6741' },
+        ].map((s) => (
+          <div key={s.label} style={{ borderRadius: 10, background: '#ffffff', border: '1px solid #ede4d5', padding: '14px 18px', boxShadow: '0 1px 4px rgba(43,26,16,0.05)' }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9b7b5c' }}>{s.label}</p>
+            <p style={{ margin: '6px 0 0', fontSize: 20, fontWeight: 700, fontFamily: 'Georgia, serif', color: s.color }}>{s.value}</p>
+          </div>
+        ))}
       </div>
 
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <div className="h-7 w-7 animate-spin rounded-full border-2 border-neutral-700 border-t-brand-500" />
+          <div className="h-7 w-7 animate-spin rounded-full border-2" style={{ borderColor: '#e0d3c0', borderTopColor: '#c9a435' }} />
         </div>
       ) : insurances.length === 0 ? (
         <EmptyState
@@ -91,48 +80,51 @@ export function Insurance() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {insurances.map((insurance) => (
-            <div key={insurance.id} className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-              <div className="flex items-start justify-between gap-2">
+          {insurances.map((ins) => (
+            <div
+              key={ins.id}
+              style={{
+                borderRadius: 12, background: '#ffffff', border: '1px solid #ede4d5',
+                borderTop: '2px solid #c9a435', padding: 20,
+                boxShadow: '0 1px 4px rgba(43,26,16,0.05)',
+              }}
+            >
+              <div className="flex items-start justify-between gap-2 mb-4">
                 <div>
-                  <h3 className="font-semibold text-neutral-100">{insurance.name}</h3>
-                  <p className="mt-0.5 text-xs text-neutral-500">{insurance.insurer}</p>
+                  <h3 style={{ margin: 0, fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 700, color: '#2b1a10' }}>{ins.name}</h3>
+                  <p style={{ margin: '3px 0 0', fontSize: 11, color: '#9b7b5c' }}>{ins.insurer}</p>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <Badge>{INSURANCE_TYPE_LABELS[insurance.type]}</Badge>
-                  <Badge variant={insurance.is_active ? 'success' : 'danger'}>
-                    {insurance.is_active ? 'Ativo' : 'Inativo'}
-                  </Badge>
+                <div className="flex flex-col items-end gap-1.5">
+                  <Badge>{INSURANCE_TYPE_LABELS[ins.type]}</Badge>
+                  <Badge variant={ins.is_active ? 'success' : 'danger'}>{ins.is_active ? 'Ativo' : 'Inativo'}</Badge>
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-xs text-neutral-600">Prêmio/mês</p>
-                  <p className="font-medium text-neutral-200">{formatCurrency(insurance.monthly_premium)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-neutral-600">Cobertura</p>
-                  <p className="font-medium text-neutral-200">{formatCurrency(insurance.coverage_amount)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-neutral-600">Início</p>
-                  <p className="text-neutral-400">
-                    {new Date(insurance.start_date + 'T12:00:00').toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                {insurance.end_date && (
-                  <div>
-                    <p className="text-xs text-neutral-600">Vencimento</p>
-                    <p className="text-neutral-400">
-                      {new Date(insurance.end_date + 'T12:00:00').toLocaleDateString('pt-BR')}
-                    </p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {[
+                  { label: 'Prêmio/mês', value: formatCurrency(ins.monthly_premium), color: '#c0392b' },
+                  { label: 'Cobertura', value: formatCurrency(ins.coverage_amount), color: '#4a6741' },
+                  { label: 'Início', value: new Date(ins.start_date + 'T12:00:00').toLocaleDateString('pt-BR'), color: '#5e4a3c' },
+                  ins.end_date
+                    ? { label: 'Vencimento', value: new Date(ins.end_date + 'T12:00:00').toLocaleDateString('pt-BR'), color: '#5e4a3c' }
+                    : null,
+                ].filter(Boolean).map((item) => (
+                  <div key={item!.label}>
+                    <p style={{ margin: 0, fontSize: 10, color: '#ceb99f', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>{item!.label}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: 13, fontWeight: 600, color: item!.color }}>{item!.value}</p>
                   </div>
-                )}
+                ))}
               </div>
 
               <div className="mt-4 flex justify-end">
-                <button onClick={() => void deleteInsurance.mutateAsync(insurance.id)} className="text-xs text-neutral-600 hover:text-red-400">Remover</button>
+                <button
+                  onClick={() => void deleteInsurance.mutateAsync(ins.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#ceb99f', transition: 'color 0.15s', fontFamily: 'Inter, system-ui, sans-serif' }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#c0392b')}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#ceb99f')}
+                >
+                  Remover
+                </button>
               </div>
             </div>
           ))}
@@ -183,7 +175,7 @@ export function Insurance() {
             <Textarea value={form.notes ?? ''} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value || null }))} placeholder="Opcional" />
           </FormField>
 
-          {formError && <p className="text-xs text-red-400">{formError}</p>}
+          {formError && <p style={{ fontSize: 12, color: '#c0392b' }}>{formError}</p>}
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button type="submit" loading={createInsurance.isPending}>Salvar</Button>

@@ -13,34 +13,125 @@ import {
 import type { FinancialGoal } from '../types';
 import { GoalStatus } from '../types';
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function Card({
+  children,
+  featured,
+  className = '',
+}: {
+  children: React.ReactNode;
+  featured?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-xl p-5 ${className}`}
+      style={{
+        background: '#ffffff',
+        border: '1px solid #ede4d5',
+        borderTop: featured ? '2px solid #c9a435' : '1px solid #ede4d5',
+        boxShadow: '0 1px 4px rgba(43,26,16,0.05), 0 4px 12px rgba(43,26,16,0.04)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function StatCard({
-  label, value, sub, valueClass = 'text-neutral-100',
-}: { label: string; value: string; sub?: string; valueClass?: string }) {
+  label,
+  value,
+  sub,
+  valueColor = '#2b1a10',
+  featured,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  valueColor?: string;
+  featured?: boolean;
+}) {
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-      <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">{label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${valueClass}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-neutral-500">{sub}</p>}
-    </div>
+    <Card featured={featured}>
+      <p
+        style={{
+          margin: 0,
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: '#9b7b5c',
+        }}
+      >
+        {label}
+      </p>
+      <p
+        style={{
+          margin: '8px 0 0',
+          fontSize: 22,
+          fontWeight: 700,
+          fontFamily: 'Georgia, serif',
+          color: valueColor,
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </p>
+      {sub && (
+        <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9b7b5c' }}>{sub}</p>
+      )}
+    </Card>
   );
 }
 
-function ProgressBar({ value, max, colorClass = 'bg-brand-500' }: { value: number; max: number; colorClass?: string }) {
+function ProgressBar({
+  value,
+  max,
+  color = '#c9a435',
+}: {
+  value: number;
+  max: number;
+  color?: string;
+}) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-neutral-800">
-      <div className={`h-full rounded-full transition-all ${colorClass}`} style={{ width: `${pct}%` }} />
+    <div className="progress-track">
+      <div className="progress-fill" style={{ width: `${pct}%`, background: color }} />
     </div>
   );
 }
 
-function SectionTitle({ children, to }: { children: React.ReactNode; to?: string }) {
+function SectionTitle({
+  children,
+  to,
+}: {
+  children: React.ReactNode;
+  to?: string;
+}) {
   return (
-    <div className="mb-3 flex items-center justify-between">
-      <h2 className="text-sm font-semibold text-neutral-400">{children}</h2>
-      {to && <Link to={to} className="text-xs text-brand-500 hover:underline">Ver tudo →</Link>}
+    <div className="mb-4 flex items-center justify-between">
+      <h2
+        style={{
+          margin: 0,
+          fontFamily: 'Georgia, serif',
+          fontSize: 14,
+          fontWeight: 700,
+          color: '#2b1a10',
+        }}
+      >
+        {children}
+      </h2>
+      {to && (
+        <Link
+          to={to}
+          style={{ fontSize: 12, color: '#c9a435', textDecoration: 'none', fontWeight: 600 }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none')}
+        >
+          Ver tudo →
+        </Link>
+      )}
     </div>
   );
 }
@@ -48,7 +139,6 @@ function SectionTitle({ children, to }: { children: React.ReactNode; to?: string
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function Dashboard() {
-  const now = new Date();
   const { activeMonth, activeYear } = useAppStore();
   const month = activeMonth;
   const year = activeYear;
@@ -56,7 +146,6 @@ export function Dashboard() {
   const { data: profile } = useProfile();
   const { data: stats, isLoading: statsLoading } = useFinancialStats(month, year);
 
-  // Goals list (top 3 active)
   const { data: goals = [] } = useQuery({
     queryKey: ['goals-dashboard'],
     queryFn: async () => {
@@ -73,7 +162,10 @@ export function Dashboard() {
   if (statsLoading || !stats) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-brand-500" />
+        <div
+          className="h-7 w-7 animate-spin rounded-full border-2"
+          style={{ borderColor: '#e0d3c0', borderTopColor: '#c9a435' }}
+        />
       </div>
     );
   }
@@ -94,18 +186,44 @@ export function Dashboard() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold capitalize text-neutral-100">{monthName}</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1
+            style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 24,
+              fontWeight: 700,
+              color: '#2b1a10',
+              margin: 0,
+              textTransform: 'capitalize',
+            }}
+          >
+            {monthName}
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: '#9b7b5c' }}>
             Olá{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! Aqui está seu resumo.
           </p>
         </div>
         <Link
           to="/transactions"
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            borderRadius: 8,
+            background: '#2b1a10',
+            color: '#ffffff',
+            padding: '8px 16px',
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            textDecoration: 'none',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = '#3d2e22')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = '#2b1a10')}
         >
           + Lançamento
         </Link>
@@ -113,12 +231,12 @@ export function Dashboard() {
 
       {/* Top KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Saldo Total" value={formatCurrency(stats.totalBalance)} />
-        <StatCard label="Patrimônio" value={formatCurrency(stats.netWorth)} />
+        <StatCard label="Saldo Total" value={formatCurrency(stats.totalBalance)} featured />
+        <StatCard label="Patrimônio Líquido" value={formatCurrency(stats.netWorth)} />
         <StatCard
           label="Resultado do Mês"
           value={formatCurrency(stats.monthlySavings)}
-          valueClass={stats.monthlySavings >= 0 ? 'text-green-400' : 'text-red-400'}
+          valueColor={stats.monthlySavings >= 0 ? '#4a6741' : '#c0392b'}
           sub={`Taxa de poupança: ${formatPercentage(stats.savingsRate)}`}
         />
         <StatCard
@@ -136,29 +254,38 @@ export function Dashboard() {
             { label: 'Pessoa Física', income: stats.pfIncome, expenses: stats.pfExpenses, balance: stats.pfBalance },
             { label: 'Pessoa Jurídica', income: stats.pjIncome, expenses: stats.pjExpenses, balance: stats.pjBalance },
           ].map(({ label, income, expenses, balance }) => (
-            <div key={label} className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium text-neutral-300">{label}</span>
-                <span className="text-sm font-semibold text-neutral-100">{formatCurrency(balance)}</span>
+            <Card key={label}>
+              <div className="mb-4 flex items-center justify-between">
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#5e4a3c' }}>{label}</span>
+                <span
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    fontFamily: 'Georgia, serif',
+                    color: '#2b1a10',
+                  }}
+                >
+                  {formatCurrency(balance)}
+                </span>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-neutral-500">Receitas</span>
-                  <span className="text-green-400">{formatCurrency(income)}</span>
+                  <span style={{ color: '#9b7b5c' }}>Receitas</span>
+                  <span style={{ color: '#4a6741', fontWeight: 600 }}>{formatCurrency(income)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-neutral-500">Despesas</span>
-                  <span className="text-red-400">{formatCurrency(expenses)}</span>
+                  <span style={{ color: '#9b7b5c' }}>Despesas</span>
+                  <span style={{ color: '#c0392b', fontWeight: 600 }}>{formatCurrency(expenses)}</span>
                 </div>
                 <div className="pt-1">
                   <ProgressBar
                     value={expenses}
                     max={income || 1}
-                    colorClass={expenses > income ? 'bg-red-500' : 'bg-brand-500'}
+                    color={expenses > income ? '#c0392b' : '#c9a435'}
                   />
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -167,51 +294,58 @@ export function Dashboard() {
       {stats.taxEstimate && (
         <div>
           <SectionTitle to="/tools">Estimativa de Impostos do Mês</SectionTitle>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
+          <Card>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <div>
-                <p className="text-xs text-neutral-500">IRPF estimado</p>
-                <p className="mt-1 text-lg font-semibold text-red-400">{formatCurrency(stats.taxEstimate.irpfDue)}</p>
-                <p className="text-xs text-neutral-600">Faixa {stats.taxEstimate.irpfBracket}</p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500">INSS</p>
-                <p className="mt-1 text-lg font-semibold text-red-400">{formatCurrency(stats.taxEstimate.inssDeduction)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500">Impostos PJ</p>
-                <p className="mt-1 text-lg font-semibold text-red-400">{formatCurrency(stats.taxEstimate.pjTaxesDue)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500">Carga total</p>
-                <p className="mt-1 text-lg font-semibold text-amber-400">{formatCurrency(stats.taxEstimate.totalTaxBurden)}</p>
-                <p className="text-xs text-neutral-600">{formatPercentage(stats.taxEstimate.effectiveIRPFRate)} efetivo PF</p>
-              </div>
+              {[
+                { label: 'IRPF estimado', value: stats.taxEstimate.irpfDue, sub: `Faixa ${stats.taxEstimate.irpfBracket}`, color: '#c0392b' },
+                { label: 'INSS', value: stats.taxEstimate.inssDeduction, sub: null, color: '#c0392b' },
+                { label: 'Impostos PJ', value: stats.taxEstimate.pjTaxesDue, sub: null, color: '#c0392b' },
+                { label: 'Carga total', value: stats.taxEstimate.totalTaxBurden, sub: `${formatPercentage(stats.taxEstimate.effectiveIRPFRate)} efetivo PF`, color: '#b7882c' },
+              ].map((item) => (
+                <div key={item.label}>
+                  <p style={{ margin: 0, fontSize: 10, color: '#9b7b5c', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>
+                    {item.label}
+                  </p>
+                  <p style={{ margin: '6px 0 0', fontSize: 16, fontWeight: 700, fontFamily: 'Georgia, serif', color: item.color }}>
+                    {formatCurrency(item.value)}
+                  </p>
+                  {item.sub && <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9b7b5c' }}>{item.sub}</p>}
+                </div>
+              ))}
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
-      {/* Emergency Fund — uses real 3-month average */}
+      {/* Emergency Fund */}
       <div>
         <SectionTitle to="/tools">Reserva de Emergência</SectionTitle>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-          <div className="mb-3 flex items-center justify-between">
+        <Card>
+          <div className="mb-3 flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-neutral-200">
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, fontFamily: 'Georgia, serif', color: '#2b1a10' }}>
                 {formatCurrency(stats.runway.liquidAmount)}{' '}
-                <span className="font-normal text-neutral-500">
+                <span style={{ fontSize: 13, fontWeight: 400, color: '#9b7b5c' }}>
                   de {formatCurrency(stats.runway.avgMonthlyExpenses * stats.runway.targetMonths)}
                 </span>
               </p>
-              <p className="mt-0.5 text-xs text-neutral-500">
+              <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9b7b5c' }}>
                 {stats.runway.coverageMonths.toFixed(1)} de {stats.runway.targetMonths} meses
                 {stats.runway.monthsAnalyzed > 0
-                  ? ` · média baseada nos últimos ${stats.runway.monthsAnalyzed} meses reais`
+                  ? ` · média dos últimos ${stats.runway.monthsAnalyzed} meses`
                   : ''}
               </p>
             </div>
-            <span className={`text-sm font-semibold ${stats.runway.isAdequate ? 'text-green-400' : 'text-amber-400'}`}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: stats.runway.isAdequate ? '#4a6741' : '#b7882c',
+                background: stats.runway.isAdequate ? '#e8f0e5' : '#fef3e0',
+                padding: '4px 10px',
+                borderRadius: 99,
+              }}
+            >
               {stats.runway.isAdequate
                 ? '✓ Adequada'
                 : `Faltam ${formatCurrency(
@@ -222,9 +356,9 @@ export function Dashboard() {
           <ProgressBar
             value={stats.runway.liquidAmount}
             max={Math.max(stats.runway.avgMonthlyExpenses * stats.runway.targetMonths, 1)}
-            colorClass={stats.runway.isAdequate ? 'bg-green-500' : 'bg-amber-500'}
+            color={stats.runway.isAdequate ? '#4a6741' : '#b7882c'}
           />
-        </div>
+        </Card>
       </div>
 
       {/* Goals */}
@@ -235,17 +369,19 @@ export function Dashboard() {
             {goals.map((goal) => {
               const prog = computeGoalProgress(goal);
               return (
-                <div key={goal.id} className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
+                <Card key={goal.id}>
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-neutral-200">{goal.name}</span>
-                    <span className="text-sm font-semibold text-neutral-100">{formatPercentage(prog.percentage)}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#2b1a10' }}>{goal.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#c9a435' }}>
+                      {formatPercentage(prog.percentage)}
+                    </span>
                   </div>
-                  <ProgressBar value={goal.current_amount} max={goal.target_amount} />
-                  <div className="mt-2 flex justify-between text-xs text-neutral-500">
+                  <ProgressBar value={goal.current_amount} max={goal.target_amount} color="#c9a435" />
+                  <div className="mt-2 flex justify-between text-xs" style={{ color: '#9b7b5c' }}>
                     <span>{formatCurrency(goal.current_amount)}</span>
                     <span>{formatCurrency(goal.target_amount)}</span>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -256,36 +392,38 @@ export function Dashboard() {
       {fiProjection && (
         <div>
           <SectionTitle to="/tools">Independência Financeira</SectionTitle>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-xs text-neutral-500">Patrimônio atual</p>
-                <p className="mt-1 text-lg font-semibold text-neutral-100">{formatCurrency(fiProjection.current_net_worth)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500">Patrimônio alvo</p>
-                <p className="mt-1 text-lg font-semibold text-brand-400">{formatCurrency(fiProjection.target_amount)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500">Prazo estimado</p>
-                <p className="mt-1 text-lg font-semibold text-neutral-100">
-                  {fiProjection.months_to_independence === 0
-                    ? '🎉 Atingido!'
-                    : `${Math.floor(fiProjection.months_to_independence / 12)}a ${fiProjection.months_to_independence % 12}m`}
-                </p>
-              </div>
+          <Card featured>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              {[
+                { label: 'Patrimônio atual', value: formatCurrency(fiProjection.current_net_worth), color: '#2b1a10' },
+                { label: 'Patrimônio alvo', value: formatCurrency(fiProjection.target_amount), color: '#c9a435' },
+                {
+                  label: 'Prazo estimado',
+                  value: fiProjection.months_to_independence === 0
+                    ? 'Atingido!'
+                    : `${Math.floor(fiProjection.months_to_independence / 12)}a ${fiProjection.months_to_independence % 12}m`,
+                  color: '#2b1a10',
+                },
+              ].map((item) => (
+                <div key={item.label}>
+                  <p style={{ margin: 0, fontSize: 10, color: '#9b7b5c', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>
+                    {item.label}
+                  </p>
+                  <p style={{ margin: '6px 0 0', fontSize: 17, fontWeight: 700, fontFamily: 'Georgia, serif', color: item.color }}>
+                    {item.value}
+                  </p>
+                </div>
+              ))}
             </div>
-            <div className="mt-4">
-              <ProgressBar
-                value={fiProjection.current_net_worth}
-                max={fiProjection.target_amount}
-                colorClass="bg-brand-500"
-              />
-              <p className="mt-1 text-right text-xs text-neutral-500">
-                {formatPercentage((fiProjection.current_net_worth / fiProjection.target_amount) * 100)} do caminho percorrido
-              </p>
-            </div>
-          </div>
+            <ProgressBar
+              value={fiProjection.current_net_worth}
+              max={fiProjection.target_amount}
+              color="#c9a435"
+            />
+            <p style={{ margin: '6px 0 0', textAlign: 'right', fontSize: 11, color: '#9b7b5c' }}>
+              {formatPercentage((fiProjection.current_net_worth / fiProjection.target_amount) * 100)} do caminho percorrido
+            </p>
+          </Card>
         </div>
       )}
 
@@ -295,17 +433,38 @@ export function Dashboard() {
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
             { to: '/transactions', label: 'Novo lançamento', icon: '↕' },
-            { to: '/goals', label: 'Minhas metas', icon: '◈' },
-            { to: '/tools', label: 'Ferramentas', icon: '⊕' },
-            { to: '/reports', label: 'Relatórios', icon: '▤' },
+            { to: '/goals',        label: 'Minhas metas',    icon: '◆' },
+            { to: '/tools',        label: 'Ferramentas',     icon: '⊕' },
+            { to: '/reports',      label: 'Relatórios',      icon: '▤' },
           ].map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 p-4 transition hover:border-neutral-700 hover:bg-neutral-800"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                borderRadius: 10,
+                background: '#ffffff',
+                border: '1px solid #ede4d5',
+                padding: '14px 16px',
+                textDecoration: 'none',
+                boxShadow: '0 1px 4px rgba(43,26,16,0.05)',
+                transition: 'border-color 0.15s, box-shadow 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.borderColor = '#c9a435';
+                el.style.boxShadow = '0 2px 8px rgba(201,164,53,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.borderColor = '#ede4d5';
+                el.style.boxShadow = '0 1px 4px rgba(43,26,16,0.05)';
+              }}
             >
-              <span className="text-lg text-brand-400">{item.icon}</span>
-              <span className="text-sm font-medium text-neutral-300">{item.label}</span>
+              <span style={{ fontSize: 17, color: '#c9a435', flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#2b1a10' }}>{item.label}</span>
             </Link>
           ))}
         </div>

@@ -15,8 +15,17 @@ const TAB_LABELS: Record<Tab, string> = {
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-      <h3 className="mb-5 text-sm font-semibold text-neutral-300">{title}</h3>
+    <div
+      style={{
+        borderRadius: 12, background: '#ffffff', border: '1px solid #ede4d5',
+        padding: 24, boxShadow: '0 1px 4px rgba(43,26,16,0.05)',
+      }}
+    >
+      <h3
+        style={{ margin: '0 0 20px', fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 700, color: '#2b1a10' }}
+      >
+        {title}
+      </h3>
       {children}
     </div>
   );
@@ -31,16 +40,9 @@ export function Settings() {
   const upsertPF = useUpsertPF();
   const upsertPJ = useUpsertPJ();
 
-  // Personal form
   const [personal, setPersonal] = useState({ full_name: '', profession: '', phone: '' });
-
-  // PF form
   const [pf, setPf] = useState({ cpf: '', tax_bracket: '' });
-
-  // PJ form
   const [pj, setPj] = useState({ cnpj: '', company_name: '', tax_regime: 'SIMPLES', pro_labore: '' });
-
-  // Goals form
   const [goals, setGoals] = useState({
     monthly_income_target: '',
     emergency_fund_months: '6',
@@ -49,15 +51,8 @@ export function Settings() {
 
   useEffect(() => {
     if (!profile) return;
-    setPersonal({
-      full_name: profile.full_name ?? '',
-      profession: profile.profession ?? '',
-      phone: profile.phone ?? '',
-    });
-    setPf({
-      cpf: profile.pf_profile?.cpf ?? '',
-      tax_bracket: profile.pf_profile?.tax_bracket?.toString() ?? '',
-    });
+    setPersonal({ full_name: profile.full_name ?? '', profession: profile.profession ?? '', phone: profile.phone ?? '' });
+    setPf({ cpf: profile.pf_profile?.cpf ?? '', tax_bracket: profile.pf_profile?.tax_bracket?.toString() ?? '' });
     setPj({
       cnpj: profile.pj_profile?.cnpj ?? '',
       company_name: profile.pj_profile?.company_name ?? '',
@@ -81,31 +76,25 @@ export function Settings() {
         phone: personal.phone || null,
       });
     }
-
     if (activeTab === 'pf') {
       await upsertPF.mutateAsync({
         cpf: pf.cpf || null,
         tax_bracket: pf.tax_bracket ? parseFloat(pf.tax_bracket) : null,
       });
     }
-
     if (activeTab === 'pj') {
       if (!pj.cnpj || !pj.company_name) return;
       await upsertPJ.mutateAsync({
-        cnpj: pj.cnpj,
-        company_name: pj.company_name,
+        cnpj: pj.cnpj, company_name: pj.company_name,
         tax_regime: pj.tax_regime as 'SIMPLES' | 'LUCRO_PRESUMIDO' | 'LUCRO_REAL',
         pro_labore: pj.pro_labore ? parseFloat(pj.pro_labore) : null,
       });
     }
-
     if (activeTab === 'goals') {
       await updateProfile.mutateAsync({
         monthly_income_target: goals.monthly_income_target ? parseFloat(goals.monthly_income_target) : null,
         emergency_fund_months: parseInt(goals.emergency_fund_months) || 6,
-        financial_independence_target: goals.financial_independence_target
-          ? parseFloat(goals.financial_independence_target)
-          : null,
+        financial_independence_target: goals.financial_independence_target ? parseFloat(goals.financial_independence_target) : null,
       });
     }
 
@@ -118,7 +107,7 @@ export function Settings() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-7 w-7 animate-spin rounded-full border-2 border-neutral-700 border-t-brand-500" />
+        <div className="h-7 w-7 animate-spin rounded-full border-2" style={{ borderColor: '#e0d3c0', borderTopColor: '#c9a435' }} />
       </div>
     );
   }
@@ -128,15 +117,19 @@ export function Settings() {
       <PageHeader title="Configurações" description="Gerencie seu perfil e preferências" />
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900 p-1">
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderRadius: 10, background: '#f9f6f0', border: '1px solid #e0d3c0', padding: 4 }}>
         {(Object.keys(TAB_LABELS) as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={[
-              'flex-1 rounded-md py-2 text-xs font-medium transition',
-              activeTab === tab ? 'bg-brand-600 text-white' : 'text-neutral-500 hover:text-neutral-200',
-            ].join(' ')}
+            style={{
+              flex: 1, borderRadius: 7, padding: '8px 12px', fontSize: 12, fontWeight: 700,
+              border: 'none', cursor: 'pointer', transition: 'background 0.15s, color 0.15s',
+              background: activeTab === tab ? '#2b1a10' : 'transparent',
+              color: activeTab === tab ? '#ffffff' : '#9b7b5c',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              letterSpacing: '0.04em',
+            }}
           >
             {TAB_LABELS[tab]}
           </button>
@@ -148,26 +141,13 @@ export function Settings() {
           <SectionCard title="Dados pessoais">
             <div className="space-y-4">
               <FormField label="Nome completo" required>
-                <Input
-                  value={personal.full_name}
-                  onChange={(e) => setPersonal((f) => ({ ...f, full_name: e.target.value }))}
-                  placeholder="Seu nome completo"
-                  required
-                />
+                <Input value={personal.full_name} onChange={(e) => setPersonal((f) => ({ ...f, full_name: e.target.value }))} placeholder="Seu nome completo" required />
               </FormField>
               <FormField label="Profissão">
-                <Input
-                  value={personal.profession}
-                  onChange={(e) => setPersonal((f) => ({ ...f, profession: e.target.value }))}
-                  placeholder="Ex: Nutricionista"
-                />
+                <Input value={personal.profession} onChange={(e) => setPersonal((f) => ({ ...f, profession: e.target.value }))} placeholder="Ex: Nutricionista" />
               </FormField>
               <FormField label="Telefone">
-                <Input
-                  value={personal.phone}
-                  onChange={(e) => setPersonal((f) => ({ ...f, phone: e.target.value }))}
-                  placeholder="(11) 99999-9999"
-                />
+                <Input value={personal.phone} onChange={(e) => setPersonal((f) => ({ ...f, phone: e.target.value }))} placeholder="(11) 99999-9999" />
               </FormField>
             </div>
           </SectionCard>
@@ -177,17 +157,10 @@ export function Settings() {
           <SectionCard title="Pessoa Física">
             <div className="space-y-4">
               <FormField label="CPF">
-                <Input
-                  value={pf.cpf}
-                  onChange={(e) => setPf((f) => ({ ...f, cpf: e.target.value }))}
-                  placeholder="000.000.000-00"
-                />
+                <Input value={pf.cpf} onChange={(e) => setPf((f) => ({ ...f, cpf: e.target.value }))} placeholder="000.000.000-00" />
               </FormField>
               <FormField label="Alíquota IRPF (%)">
-                <Select
-                  value={pf.tax_bracket}
-                  onChange={(e) => setPf((f) => ({ ...f, tax_bracket: e.target.value }))}
-                >
+                <Select value={pf.tax_bracket} onChange={(e) => setPf((f) => ({ ...f, tax_bracket: e.target.value }))}>
                   <option value="">Não informado</option>
                   <option value="0">Isento (0%)</option>
                   <option value="7.5">7,5%</option>
@@ -205,18 +178,10 @@ export function Settings() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="CNPJ" required={activeTab === 'pj'}>
-                  <Input
-                    value={pj.cnpj}
-                    onChange={(e) => setPj((f) => ({ ...f, cnpj: e.target.value }))}
-                    placeholder="00.000.000/0001-00"
-                  />
+                  <Input value={pj.cnpj} onChange={(e) => setPj((f) => ({ ...f, cnpj: e.target.value }))} placeholder="00.000.000/0001-00" />
                 </FormField>
                 <FormField label="Razão Social" required={activeTab === 'pj'}>
-                  <Input
-                    value={pj.company_name}
-                    onChange={(e) => setPj((f) => ({ ...f, company_name: e.target.value }))}
-                    placeholder="Nome da empresa"
-                  />
+                  <Input value={pj.company_name} onChange={(e) => setPj((f) => ({ ...f, company_name: e.target.value }))} placeholder="Nome da empresa" />
                 </FormField>
               </div>
               <FormField label="Regime Tributário">
@@ -227,14 +192,7 @@ export function Settings() {
                 </Select>
               </FormField>
               <FormField label="Pró-Labore Mensal (R$)">
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={pj.pro_labore}
-                  onChange={(e) => setPj((f) => ({ ...f, pro_labore: e.target.value }))}
-                  placeholder="Ex: 5000,00"
-                />
+                <Input type="number" min="0" step="0.01" value={pj.pro_labore} onChange={(e) => setPj((f) => ({ ...f, pro_labore: e.target.value }))} placeholder="Ex: 5000,00" />
               </FormField>
             </div>
           </SectionCard>
@@ -244,44 +202,27 @@ export function Settings() {
           <SectionCard title="Metas Pessoais">
             <div className="space-y-4">
               <FormField label="Meta de receita mensal (R$)">
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={goals.monthly_income_target}
-                  onChange={(e) => setGoals((f) => ({ ...f, monthly_income_target: e.target.value }))}
-                  placeholder="Ex: 15000,00"
-                />
+                <Input type="number" min="0" step="0.01" value={goals.monthly_income_target} onChange={(e) => setGoals((f) => ({ ...f, monthly_income_target: e.target.value }))} placeholder="Ex: 15000,00" />
               </FormField>
               <FormField label="Meses de reserva de emergência">
-                <Select
-                  value={goals.emergency_fund_months}
-                  onChange={(e) => setGoals((f) => ({ ...f, emergency_fund_months: e.target.value }))}
-                >
-                  {[3, 6, 9, 12, 18, 24].map((m) => (
-                    <option key={m} value={m}>{m} meses</option>
-                  ))}
+                <Select value={goals.emergency_fund_months} onChange={(e) => setGoals((f) => ({ ...f, emergency_fund_months: e.target.value }))}>
+                  {[3, 6, 9, 12, 18, 24].map((m) => <option key={m} value={m}>{m} meses</option>)}
                 </Select>
               </FormField>
               <FormField label="Patrimônio alvo para independência financeira (R$)">
-                <Input
-                  type="number"
-                  min="0"
-                  step="1000"
-                  value={goals.financial_independence_target}
-                  onChange={(e) => setGoals((f) => ({ ...f, financial_independence_target: e.target.value }))}
-                  placeholder="Ex: 3000000,00"
-                />
+                <Input type="number" min="0" step="1000" value={goals.financial_independence_target} onChange={(e) => setGoals((f) => ({ ...f, financial_independence_target: e.target.value }))} placeholder="Ex: 3000000,00" />
               </FormField>
             </div>
           </SectionCard>
         )}
 
         <div className="mt-5 flex items-center justify-end gap-4">
-          {saved && <span className="text-sm text-green-400">Salvo com sucesso ✓</span>}
-          <Button type="submit" loading={isSaving}>
-            Salvar alterações
-          </Button>
+          {saved && (
+            <span style={{ fontSize: 13, color: '#4a6741', fontWeight: 600 }}>
+              ✓ Salvo com sucesso
+            </span>
+          )}
+          <Button type="submit" loading={isSaving}>Salvar alterações</Button>
         </div>
       </form>
     </div>

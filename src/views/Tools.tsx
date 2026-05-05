@@ -14,10 +14,23 @@ import { FormField, Input, Select } from '../components/ui/FormField';
 type Tool = 'fi' | 'pj' | 'emergency';
 
 const TOOL_LABELS: Record<Tool, { label: string; desc: string }> = {
-  fi: { label: 'Independência Financeira', desc: 'Projete quando você pode parar de trabalhar' },
-  pj: { label: 'Calculadora PJ', desc: 'Simule distribuição de lucros e pró-labore' },
+  fi:        { label: 'Independência Financeira', desc: 'Projete quando você pode parar de trabalhar' },
+  pj:        { label: 'Calculadora PJ', desc: 'Simule distribuição de lucros e pró-labore' },
   emergency: { label: 'Reserva de Emergência', desc: 'Quanto você precisa guardar' },
 };
+
+const panelStyle: React.CSSProperties = {
+  borderRadius: 12, background: '#ffffff', border: '1px solid #ede4d5',
+  padding: 20, boxShadow: '0 1px 4px rgba(43,26,16,0.05)',
+};
+
+function PanelTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 style={{ margin: '0 0 16px', fontFamily: 'Georgia, serif', fontSize: 14, fontWeight: 700, color: '#2b1a10' }}>
+      {children}
+    </h3>
+  );
+}
 
 // ─── FI Calculator ─────────────────────────────────────────────────────────────
 
@@ -49,10 +62,8 @@ function FICalculator({ defaultNetWorth }: { defaultNetWorth: number }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Inputs */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-neutral-300">Parâmetros</h3>
-
+      <div style={panelStyle} className="space-y-4">
+        <PanelTitle>Parâmetros</PanelTitle>
         <FormField label="Patrimônio atual (R$)">
           <Input type="number" min="0" step="1000" value={form.currentNetWorth} onChange={field('currentNetWorth')} />
         </FormField>
@@ -67,49 +78,36 @@ function FICalculator({ defaultNetWorth }: { defaultNetWorth: number }) {
         </FormField>
       </div>
 
-      {/* Results */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5 space-y-5">
-        <h3 className="text-sm font-semibold text-neutral-300">Projeção</h3>
-
+      <div style={{ ...panelStyle, borderTop: '2px solid #c9a435' }} className="space-y-5">
+        <PanelTitle>Projeção</PanelTitle>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-neutral-500">Patrimônio alvo</p>
-            <p className="mt-1 text-xl font-semibold text-brand-400">{formatCurrency(projection.target_amount)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Prazo estimado</p>
-            <p className="mt-1 text-xl font-semibold text-neutral-100">
-              {projection.months_to_independence === 0 ? '🎉 Já atingiu!' : `${years}a ${months}m`}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Data projetada</p>
-            <p className="mt-1 text-sm font-medium text-neutral-200">
-              {projection.months_to_independence > 0
-                ? new Date(projection.projected_date + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-                : '—'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Renda passiva/mês</p>
-            <p className="mt-1 text-sm font-medium text-green-400">{formatCurrency(projection.monthly_passive_income)}</p>
-          </div>
+          {[
+            { label: 'Patrimônio alvo', value: formatCurrency(projection.target_amount), color: '#c9a435' },
+            { label: 'Prazo estimado', value: projection.months_to_independence === 0 ? 'Atingido!' : `${years}a ${months}m`, color: '#2b1a10' },
+            { label: 'Data projetada', value: projection.months_to_independence > 0 ? new Date(projection.projected_date + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : '—', color: '#5e4a3c' },
+            { label: 'Renda passiva/mês', value: formatCurrency(projection.monthly_passive_income), color: '#4a6741' },
+          ].map((item) => (
+            <div key={item.label}>
+              <p style={{ margin: 0, fontSize: 10, color: '#9b7b5c', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>{item.label}</p>
+              <p style={{ margin: '6px 0 0', fontSize: 16, fontWeight: 700, fontFamily: 'Georgia, serif', color: item.color }}>{item.value}</p>
+            </div>
+          ))}
         </div>
 
         <div>
-          <div className="mb-1 flex justify-between text-xs text-neutral-500">
+          <div className="mb-1 flex justify-between text-xs" style={{ color: '#9b7b5c' }}>
             <span>{formatCurrency(projection.current_net_worth)}</span>
             <span>{formatPercentage(progressPct)}</span>
           </div>
-          <div className="h-3 overflow-hidden rounded-full bg-neutral-800">
-            <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${progressPct}%` }} />
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${progressPct}%`, background: '#c9a435' }} />
           </div>
-          <p className="mt-1 text-right text-xs text-neutral-600">{formatCurrency(projection.target_amount)}</p>
+          <p style={{ margin: '4px 0 0', textAlign: 'right', fontSize: 11, color: '#9b7b5c' }}>{formatCurrency(projection.target_amount)}</p>
         </div>
 
-        <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-3 text-xs text-neutral-500">
+        <div style={{ background: '#f9f6f0', border: '1px solid #e0d3c0', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#7d6250' }}>
           Baseado na regra dos 4% (Taxa de Retirada Segura). O patrimônio alvo é calculado como{' '}
-          <span className="text-neutral-400">renda desejada × (1 / taxa mensal)</span>.
+          <span style={{ color: '#5e4a3c', fontWeight: 600 }}>renda desejada × (1 / taxa mensal)</span>.
         </div>
       </div>
     </div>
@@ -147,10 +145,8 @@ function PJCalculator({ defaultProLabore }: { defaultProLabore: number }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Inputs */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-neutral-300">Parâmetros do mês</h3>
-
+      <div style={panelStyle} className="space-y-4">
+        <PanelTitle>Parâmetros do mês</PanelTitle>
         <FormField label="Faturamento bruto (R$)">
           <Input type="number" min="0" step="100" value={form.grossRevenue} onChange={field('grossRevenue')} />
         </FormField>
@@ -174,36 +170,33 @@ function PJCalculator({ defaultProLabore }: { defaultProLabore: number }) {
         </FormField>
       </div>
 
-      {/* Results */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-        <h3 className="mb-4 text-sm font-semibold text-neutral-300">DRE Simplificado</h3>
+      <div style={{ ...panelStyle, borderTop: '2px solid #c9a435' }}>
+        <PanelTitle>DRE Simplificado</PanelTitle>
         <div className="space-y-1">
           {rows.map((row) => (
             <div
               key={row.label}
-              className={[
-                'flex items-center justify-between py-2',
-                row.highlight ? 'border-t border-neutral-800 mt-1 pt-3' : '',
-              ].join(' ')}
+              className="flex items-center justify-between py-2"
+              style={row.highlight ? { borderTop: '1px solid #f4efe4', marginTop: 4, paddingTop: 12 } : undefined}
             >
-              <span className={`text-sm ${row.highlight ? 'font-semibold text-neutral-200' : 'text-neutral-400'}`}>
+              <span style={{ fontSize: 13, color: row.highlight ? '#2b1a10' : '#7d6250', fontWeight: row.highlight ? 600 : 400 }}>
                 {row.label}
               </span>
-              <span className={[
-                'text-sm font-medium',
-                row.highlight && row.value >= 0 ? 'text-green-400' : '',
-                row.negative ? 'text-red-400' : '',
-                !row.highlight && !row.negative ? 'text-neutral-200' : '',
-              ].join(' ')}>
+              <span style={{
+                fontSize: 13,
+                fontWeight: row.highlight ? 700 : 500,
+                fontFamily: row.highlight ? 'Georgia, serif' : 'inherit',
+                color: row.highlight && row.value >= 0 ? '#4a6741' : row.negative ? '#c0392b' : '#5e4a3c',
+              }}>
                 {row.negative ? '−' : ''} {formatCurrency(Math.abs(row.value))}
               </span>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 rounded-lg border border-brand-800/50 bg-brand-950/30 p-3 text-xs text-brand-300">
+        <div style={{ marginTop: 16, background: '#f9f6f0', border: '1px solid #c9a435', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#7d6250' }}>
           Você leva para casa:{' '}
-          <strong className="text-brand-200">
+          <strong style={{ color: '#2b1a10', fontFamily: 'Georgia, serif', fontSize: 14 }}>
             {formatCurrency(result.proLabore + result.profitDistribution)}/mês
           </strong>{' '}
           (pró-labore + distribuição)
@@ -215,22 +208,11 @@ function PJCalculator({ defaultProLabore }: { defaultProLabore: number }) {
 
 // ─── Emergency Fund ─────────────────────────────────────────────────────────────
 
-function EmergencyFundCalc({
-  liquidAssets,
-  defaultMonths,
-}: {
-  liquidAssets: number;
-  defaultMonths: number;
-}) {
+function EmergencyFundCalc({ liquidAssets, defaultMonths }: { liquidAssets: number; defaultMonths: number }) {
   const [monthlyExpenses, setMonthlyExpenses] = useState(5000);
   const [targetMonths, setTargetMonths] = useState(defaultMonths);
 
-  const status = computeEmergencyFundStatus(
-    [],
-    monthlyExpenses,
-    targetMonths,
-  );
-  // Override with real liquid amount
+  const status = computeEmergencyFundStatus([], monthlyExpenses, targetMonths);
   const realStatus = {
     ...status,
     currentLiquidAmount: liquidAssets,
@@ -244,73 +226,45 @@ function EmergencyFundCalc({
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Inputs */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-neutral-300">Parâmetros</h3>
+      <div style={panelStyle} className="space-y-4">
+        <PanelTitle>Parâmetros</PanelTitle>
         <FormField label="Despesas mensais médias (R$)">
-          <Input
-            type="number"
-            min="0"
-            step="500"
-            value={monthlyExpenses}
-            onChange={(e) => setMonthlyExpenses(parseFloat(e.target.value) || 0)}
-          />
+          <Input type="number" min="0" step="500" value={monthlyExpenses} onChange={(e) => setMonthlyExpenses(parseFloat(e.target.value) || 0)} />
         </FormField>
         <FormField label="Meses de cobertura desejados">
-          <Select
-            value={targetMonths}
-            onChange={(e) => setTargetMonths(parseInt(e.target.value))}
-          >
-            {[3, 6, 9, 12, 18, 24].map((m) => (
-              <option key={m} value={m}>{m} meses</option>
-            ))}
+          <Select value={targetMonths} onChange={(e) => setTargetMonths(parseInt(e.target.value))}>
+            {[3, 6, 9, 12, 18, 24].map((m) => <option key={m} value={m}>{m} meses</option>)}
           </Select>
         </FormField>
       </div>
 
-      {/* Results */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5 space-y-5">
-        <h3 className="text-sm font-semibold text-neutral-300">Status</h3>
-
+      <div style={{ ...panelStyle, borderTop: `2px solid ${realStatus.isAdequate ? '#4a6741' : '#b7882c'}` }} className="space-y-5">
+        <PanelTitle>Status</PanelTitle>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-neutral-500">Meta da reserva</p>
-            <p className="mt-1 text-xl font-semibold text-neutral-100">{formatCurrency(realStatus.targetAmount)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Ativos líquidos</p>
-            <p className="mt-1 text-xl font-semibold text-green-400">{formatCurrency(liquidAssets)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Cobertura atual</p>
-            <p className="mt-1 text-sm font-medium text-neutral-200">
-              {realStatus.coverageMonths.toFixed(1)} meses
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Situação</p>
-            <p className={`mt-1 text-sm font-semibold ${realStatus.isAdequate ? 'text-green-400' : 'text-amber-400'}`}>
-              {realStatus.isAdequate ? '✓ Adequada' : 'Incompleta'}
-            </p>
-          </div>
+          {[
+            { label: 'Meta da reserva', value: formatCurrency(realStatus.targetAmount), color: '#2b1a10' },
+            { label: 'Ativos líquidos', value: formatCurrency(liquidAssets), color: '#4a6741' },
+            { label: 'Cobertura atual', value: `${realStatus.coverageMonths.toFixed(1)} meses`, color: '#5e4a3c' },
+            { label: 'Situação', value: realStatus.isAdequate ? '✓ Adequada' : 'Incompleta', color: realStatus.isAdequate ? '#4a6741' : '#b7882c' },
+          ].map((item) => (
+            <div key={item.label}>
+              <p style={{ margin: 0, fontSize: 10, color: '#9b7b5c', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>{item.label}</p>
+              <p style={{ margin: '6px 0 0', fontSize: 16, fontWeight: 700, fontFamily: 'Georgia, serif', color: item.color }}>{item.value}</p>
+            </div>
+          ))}
         </div>
 
         <div>
-          <div className="h-3 overflow-hidden rounded-full bg-neutral-800">
-            <div
-              className={`h-full rounded-full transition-all ${realStatus.isAdequate ? 'bg-green-500' : 'bg-amber-500'}`}
-              style={{ width: `${pct}%` }}
-            />
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${pct}%`, background: realStatus.isAdequate ? '#4a6741' : '#b7882c' }} />
           </div>
-          <p className="mt-2 text-xs text-neutral-500">
-            {formatPercentage(pct)} da meta atingida
-          </p>
+          <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9b7b5c' }}>{formatPercentage(pct)} da meta atingida</p>
         </div>
 
         {!realStatus.isAdequate && (
-          <div className="rounded-lg border border-amber-800/50 bg-amber-950/30 p-3 text-xs text-amber-300">
-            Faltam <strong className="text-amber-200">{formatCurrency(realStatus.missingAmount)}</strong> para completar a reserva.
-            Guardando <strong className="text-amber-200">{formatCurrency(realStatus.missingAmount / 12)}/mês</strong>, você completa em 1 ano.
+          <div style={{ background: '#fef3e0', border: '1px solid #b7882c', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#7d6250' }}>
+            Faltam <strong style={{ color: '#b7882c', fontFamily: 'Georgia, serif' }}>{formatCurrency(realStatus.missingAmount)}</strong> para completar a reserva.
+            Guardando <strong style={{ color: '#b7882c' }}>{formatCurrency(realStatus.missingAmount / 12)}/mês</strong>, você completa em 1 ano.
           </div>
         )}
       </div>
@@ -325,7 +279,7 @@ export function Tools() {
   const { data: profile } = useProfile();
   const { data: assets = [] } = useAssets();
 
-  const netWorth = assets.reduce((s, a) => s + a.current_value, 0);
+  const netWorth    = assets.reduce((s, a) => s + a.current_value, 0);
   const liquidAssets = assets.filter((a) => a.is_liquid).reduce((s, a) => s + a.current_value, 0);
 
   return (
@@ -338,15 +292,29 @@ export function Tools() {
           <button
             key={key}
             onClick={() => setActiveTool(key)}
-            className={[
-              'rounded-xl border p-4 text-left transition',
-              activeTool === key
-                ? 'border-brand-600 bg-brand-900/20'
-                : 'border-neutral-800 bg-neutral-900 hover:border-neutral-700',
-            ].join(' ')}
+            style={{
+              borderRadius: 12,
+              border: `1px solid ${activeTool === key ? '#c9a435' : '#ede4d5'}`,
+              background: activeTool === key ? '#fffbf0' : '#ffffff',
+              padding: 16,
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'border-color 0.15s, background 0.15s',
+              boxShadow: '0 1px 4px rgba(43,26,16,0.05)',
+            }}
+            onMouseEnter={(e) => {
+              if (activeTool !== key) {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#c9a435';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTool !== key) {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#ede4d5';
+              }
+            }}
           >
-            <p className={`text-sm font-semibold ${activeTool === key ? 'text-brand-400' : 'text-neutral-200'}`}>{label}</p>
-            <p className="mt-1 text-xs text-neutral-500">{desc}</p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, fontFamily: 'Georgia, serif', color: activeTool === key ? '#c9a435' : '#2b1a10' }}>{label}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9b7b5c' }}>{desc}</p>
           </button>
         ))}
       </div>
@@ -356,10 +324,7 @@ export function Tools() {
         {activeTool === 'fi' && <FICalculator defaultNetWorth={netWorth} />}
         {activeTool === 'pj' && <PJCalculator defaultProLabore={profile?.pj_profile?.pro_labore ?? 0} />}
         {activeTool === 'emergency' && (
-          <EmergencyFundCalc
-            liquidAssets={liquidAssets}
-            defaultMonths={profile?.emergency_fund_months ?? 6}
-          />
+          <EmergencyFundCalc liquidAssets={liquidAssets} defaultMonths={profile?.emergency_fund_months ?? 6} />
         )}
       </div>
     </div>
