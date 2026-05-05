@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { loginSchema } from '../lib/validations';
 import { parseSupabaseError } from '../lib/errors';
@@ -46,7 +46,7 @@ export function Login() {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-neutral-400">
+            <label htmlFor="email" className="block text-xs font-medium text-neutral-400 mb-1">
               E-mail
             </label>
             <input
@@ -55,22 +55,27 @@ export function Login() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="block w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               placeholder="voce@exemplo.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-neutral-400">
-              Senha
-            </label>
+            <div className="mb-1 flex items-center justify-between">
+              <label htmlFor="password" className="block text-xs font-medium text-neutral-400">
+                Senha
+              </label>
+              <Link to="/forgot-password" className="text-xs text-brand-400 hover:underline">
+                Esqueci a senha
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="block w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               placeholder="••••••••"
             />
           </div>
@@ -89,6 +94,13 @@ export function Login() {
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-neutral-600">
+          Não tem conta?{' '}
+          <Link to="/signup" className="text-brand-400 hover:underline">
+            Criar conta grátis
+          </Link>
+        </p>
       </div>
     </div>
   );
