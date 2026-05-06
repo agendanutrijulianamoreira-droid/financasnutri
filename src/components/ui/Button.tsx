@@ -12,7 +12,7 @@ const variants: Record<NonNullable<ButtonProps['variant']>, string> = {
   secondary:
     'border border-cream-400 bg-white text-brown-700 hover:bg-cream-100 hover:border-brown-300 disabled:opacity-50',
   gold:
-    'bg-brand-500 text-brown-900 hover:bg-brand-600 disabled:opacity-50 tracking-wide uppercase font-semibold',
+    'bg-brand-500 text-brown-900 hover:bg-brand-400 disabled:opacity-50 tracking-wide uppercase font-semibold',
   danger:
     'bg-danger-500 text-white hover:bg-danger-400 disabled:opacity-50',
   ghost:
@@ -37,7 +37,7 @@ export function Button({
     <button
       disabled={disabled || loading}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-300 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],
         className,
