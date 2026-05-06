@@ -26,21 +26,22 @@ export function Modal({ open, onClose, title, children, maxWidth = 'md' }: Modal
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
       style={{ background: 'rgba(43, 26, 16, 0.45)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div
-        className={`w-full ${widths[maxWidth]} rounded-2xl bg-white`}
+        className={`w-full ${widths[maxWidth]} rounded-2xl modal-enter`}
         style={{
-          boxShadow: '0 8px 32px rgba(43,26,16,0.18), 0 2px 8px rgba(43,26,16,0.10)',
+          background: '#fdfbf8',
+          boxShadow: '0 8px 32px rgba(43,26,16,0.14), 0 2px 8px rgba(43,26,16,0.07)',
           border: '1px solid #ede4d5',
         }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: '1px solid #f4efe4' }}
+          style={{ borderBottom: '1px solid #ede4d5' }}
         >
           <h2
             style={{
@@ -64,10 +65,16 @@ export function Modal({ open, onClose, title, children, maxWidth = 'md' }: Modal
               padding: '4px 6px',
               borderRadius: 6,
               lineHeight: 1,
-              transition: 'color 0.15s',
+              transition: 'color 0.3s, background 0.3s',
             }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#2b1a10')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = '#9b7b5c')}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = '#2b1a10';
+              (e.currentTarget as HTMLButtonElement).style.background = '#f4efe4';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = '#9b7b5c';
+              (e.currentTarget as HTMLButtonElement).style.background = 'none';
+            }}
             aria-label="Fechar"
           >
             ✕

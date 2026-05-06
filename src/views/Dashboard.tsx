@@ -26,7 +26,7 @@ function Card({
 }) {
   return (
     <div
-      className={`rounded-xl p-5 ${className}`}
+      className={`rounded-xl p-6 ${className}`}
       style={{
         background: '#ffffff',
         border: '1px solid #ede4d5',

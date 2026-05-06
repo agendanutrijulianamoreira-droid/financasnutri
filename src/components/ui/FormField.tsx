@@ -37,7 +37,7 @@ const inputBase: React.CSSProperties = {
   fontSize: 13.5,
   color: '#2b1a10',
   outline: 'none',
-  transition: 'border-color 0.15s, box-shadow 0.15s',
+  transition: 'border-color 0.3s, box-shadow 0.3s',
   fontFamily: 'Inter, system-ui, sans-serif',
 };
 

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid,
+} from 'recharts';
 import { useReports, useMonthlyReport, useTriggerMonthlyClose } from '../hooks/useReports';
 import { useAppStore } from '../store/useAppStore';
 import { Button } from '../components/ui/Button';
@@ -158,9 +161,62 @@ export function Reports() {
         </div>
       )}
 
-      {/* Historical */}
+      {/* Historical chart */}
       {allReports.length > 0 && (
         <div className="mt-8">
+          <h3 style={{ margin: '0 0 16px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9b7b5c' }}>
+            Evolução Mensal
+          </h3>
+          <div style={{ ...cardStyle, marginBottom: 24 }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={[...allReports].reverse().slice(-6).map((r) => ({
+                  name: `${MONTHS[r.month - 1].slice(0, 3)} ${r.year}`,
+                  Receitas: r.pf_total_income + r.pj_gross_revenue,
+                  Despesas: r.pf_total_expenses + r.pj_total_expenses,
+                  Resultado: r.total_savings,
+                }))}
+                margin={{ top: 4, right: 8, left: 8, bottom: 4 }}
+                barCategoryGap="30%"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#ede4d5" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 10, fontFamily: 'Inter, sans-serif', fill: '#9b7b5c' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={(v: number) => `R$${(v / 1000).toFixed(0)}k`}
+                  tick={{ fontSize: 10, fontFamily: 'Inter, sans-serif', fill: '#9b7b5c' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
+                />
+                <Tooltip
+                  formatter={(value) => formatCurrency(Number(value))}
+                  contentStyle={{
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: 12,
+                    borderRadius: 8,
+                    border: '1px solid #ede4d5',
+                    background: '#fdfbf8',
+                    color: '#2b1a10',
+                    boxShadow: '0 4px 12px rgba(43,26,16,0.08)',
+                  }}
+                  labelStyle={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: '#2b1a10' }}
+                  cursor={{ fill: 'rgba(201,164,53,0.06)' }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: '#9b7b5c', paddingTop: 12 }}
+                />
+                <Bar dataKey="Receitas" fill="#4a6741" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Despesas" fill="#c9a435" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Resultado" fill="#2b1a10" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
           <h3 style={{ margin: '0 0 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9b7b5c' }}>
             Histórico
           </h3>

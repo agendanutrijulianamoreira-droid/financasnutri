@@ -32,6 +32,8 @@ export function Sidebar() {
       className={[
         'fixed left-0 top-0 z-40 flex h-screen flex-col transition-all duration-300',
         sidebarOpen ? 'w-60' : 'w-[60px]',
+        /* On mobile: slide fully off-screen when collapsed */
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
       ].join(' ')}
       style={{ background: '#2b1a10' }}
     >

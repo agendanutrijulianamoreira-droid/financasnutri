@@ -42,19 +42,51 @@ function AlertWatcher() {
 }
 
 export function AppLayout() {
-  const sidebarOpen = useAppStore((s) => s.sidebarOpen);
+  const { sidebarOpen, toggleSidebar } = useAppStore();
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#f4efe4' }}>
       <AlertWatcher />
+
+      {/* Mobile overlay — closes sidebar when tapping outside */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay md:hidden"
+          onClick={toggleSidebar}
+          aria-hidden="true"
+        />
+      )}
+
       <Sidebar />
+
       <main
         className={[
           'flex-1 overflow-y-auto transition-all duration-300',
-          sidebarOpen ? 'ml-60' : 'ml-[60px]',
+          sidebarOpen ? 'md:ml-60' : 'md:ml-[60px]',
+          'ml-[60px]',
         ].join(' ')}
       >
-        <div className="min-h-full p-7">
+        {/* Mobile top bar with hamburger */}
+        <div
+          className="flex items-center gap-3 px-5 py-3 md:hidden"
+          style={{ borderBottom: '1px solid #e0d3c0', background: '#ffffff' }}
+        >
+          <button className="hamburger-btn" onClick={toggleSidebar} aria-label="Abrir menu">
+            ☰
+          </button>
+          <span
+            style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#2b1a10',
+            }}
+          >
+            Rainha das Finanças
+          </span>
+        </div>
+
+        <div className="min-h-full p-5 md:p-7">
           <Outlet />
         </div>
       </main>
